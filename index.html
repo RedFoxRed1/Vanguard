@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Export</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.3.0/github-markdown.min.css">
+  <script>
+      window.MathJax = {
+          loader: { load: ['[tex]/ams', '[tex]/boldsymbol'] },
+          tex: {
+              inlineMath: [['$', '$'], ['\\(', '\\)']],
+              displayMath: [['$$', '$$'], ['\\[', '\\]']],
+              processEscapes: true,
+              packages: { '[+]': ['ams', 'boldsymbol'] }
+          }
+      };
+  </script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.5.2/abcjs-basic-min.js"></script>
+  <style>
+      html {
+          background-color: #ffffff;
+      }
+      body {
+          margin: 0;
+          background-color: #ffffff;
+          color: #24292e;
+      }
+      .markdown-body {
+          box-sizing: border-box;
+          min-width: 200px;
+          max-width: 100%;
+          width: fit-content;
+          margin: 0 auto;
+          padding: 45px;
+          background-color: #ffffff;
+          color: #24292e;
+      }
+      .markdown-body > p,
+      .markdown-body > ul,
+      .markdown-body > ol,
+      .markdown-body > blockquote,
+      .markdown-body > h1,
+      .markdown-body > h2,
+      .markdown-body > h3,
+      .markdown-body > h4,
+      .markdown-body > h5,
+      .markdown-body > h6,
+      .markdown-body > pre,
+      .markdown-body > table,
+      .markdown-body > details,
+      .markdown-body > dl,
+      .markdown-body > hr {
+          max-width: 980px;
+          margin-left: auto !important;
+          margin-right: auto !important;
+      }
+
+
+      /* Permission pill cells — keep "🟡 Ban Members" etc. on one line */
+      .markdown-body table th[align="center"],
+      .markdown-body table td[align="center"] {
+          white-space: nowrap;
+      }
+
+      /* Syntax Highlighting */
+      .hljs-doctag, .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #d73a49; }
+      .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #6f42c1; }
+      .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator, .hljs-variable, .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id { color: #005cc5; }
+      .hljs-regexp, .hljs-string, .hljs-meta .hljs-string { color: #032f62; }
+      .hljs-built_in, .hljs-symbol { color: #e36209; }
+      .hljs-comment, .hljs-code, .hljs-formula { color: #6a737d; }
+      .hljs-name, .hljs-quote, .hljs-selector-tag, .hljs-selector-pseudo { color: #22863a; }
+      .hljs-subst { color: #24292e; }
+      .hljs-section { color: #005cc5; font-weight: bold; }
+      .hljs-bullet { color: #005cc5; }
+      .hljs-emphasis { font-style: italic; }
+      .hljs-strong { font-weight: bold; }
+      .hljs-addition { color: #22863a; background-color: #f0fff4; }
+      .hljs-deletion { color: #b31d28; background-color: #ffeef0; }
+
+      .markdown-alert {
+          padding: 0.5rem 1rem;
+          margin-bottom: 16px;
+          border-left: 0.25em solid;
+          border-radius: 0.375rem;
+      }
+      .markdown-alert > :last-child {
+          margin-bottom: 0;
+      }
+      .markdown-alert-title {
+          margin: 0 0 8px;
+          font-weight: 600;
+          line-height: 1.25;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+      }
+      .markdown-alert-icon {
+          display: inline-flex;
+          width: 16px;
+          height: 16px;
+      }
+      .markdown-alert-icon svg {
+          width: 16px;
+          height: 16px;
+          fill: currentColor;
+      }
+      .markdown-alert-note { color: #0969da; border-left-color: #0969da; background-color: #ddf4ff; }
+      .markdown-alert-tip { color: #1a7f37; border-left-color: #1a7f37; background-color: #dafbe1; }
+      .markdown-alert-important { color: #8250df; border-left-color: #8250df; background-color: #fbefff; }
+      .markdown-alert-warning { color: #9a6700; border-left-color: #9a6700; background-color: #fff8c5; }
+      .markdown-alert-caution { color: #cf222e; border-left-color: #cf222e; background-color: #ffebe9; }
+      .markdown-alert > *:not(.markdown-alert-title) { color: #24292e; }
+
+      .frontmatter-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 24px;
+          font-size: 14px;
+      }
+      .frontmatter-table th,
+      .frontmatter-table td {
+          border: 1px solid #e1e4e8;
+          padding: 8px 12px;
+          text-align: left;
+      }
+      .frontmatter-table th {
+          font-weight: 600;
+          background-color: #f6f8fa;
+          width: 150px;
+      }
+
+      /* Footnote styles */
+      .footnotes {
+          margin-top: 1.5rem;
+          font-size: 0.9em;
+          border-top: 1px solid #eaecef;
+          padding-top: 8px;
+      }
+      .footnotes ol {
+          padding-left: 1.5em;
+      }
+      .footnotes ol > li::marker {
+          content: "[" counter(list-item) "] ";
+          font-weight: 600;
+      }
+      .footnotes li > p {
+          margin: 0.2em 0;
+      }
+      .footnote-ref a,
+      .footnote-backref {
+          text-decoration: none;
+      }
+      .footnote-backref {
+          margin-left: 0.4em;
+      }
+      a.reference-link {
+          font-size: 0.75em;
+          letter-spacing: -0.02em;
+          line-height: 1;
+          vertical-align: super;
+          position: relative;
+          top: 0.08em;
+      }
+
+      /* Mermaid and Math styles */
+      .mermaid-container {
+          position: relative;
+          margin-bottom: 16px;
+      }
+      .math-block {
+          margin: 1em 0;
+          overflow-x: auto;
+          text-align: center;
+      }
+      .abc-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin: 1.5em 0;
+          padding: 1.25em;
+          background-color: #f6f8fa;
+          border: 1px solid #e1e4e8;
+          border-radius: 6px;
+          overflow-x: auto;
+      }
+      .abc-notation {
+          width: 100%;
+      }
+      .abc-notation svg {
+          background: transparent !important;
+          color: #24292e !important;
+          display: block;
+          margin: 0 auto;
+      }
+      .abc-notation svg path {
+          fill: currentColor;
+      }
+      .abc-notation svg text {
+          fill: currentColor !important;
+          stroke: none !important;
+      }
+      .abc-notation svg .abcjs-staff,
+      .abc-notation svg .abcjs-staff-extra,
+      .abc-notation svg .abcjs-bar,
+      .abc-notation svg .abcjs-ledger,
+      .abc-notation svg .abcjs-stem,
+      .abc-notation svg .abcjs-beam,
+      .abc-notation svg .abcjs-slur,
+      .abc-notation svg .abcjs-tie {
+          stroke: currentColor !important;
+      }
+      .abc-notation svg .abcjs-staff,
+      .abc-notation svg .abcjs-staff-extra,
+      .abc-notation svg .abcjs-ledger,
+      .abc-notation svg .abcjs-slur,
+      .abc-notation svg .abcjs-tie,
+      .abc-notation svg .abcjs-stem {
+          fill: none !important;
+      }
+      .abc-sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+      }
+
+      @media (max-width: 767px) {
+          .markdown-body {
+              padding: 15px;
+          }
+      }
+
+      /* Dark mode — match github-markdown-css's auto dark theme */
+      @media (prefers-color-scheme: dark) {
+          html,
+          body,
+          .markdown-body {
+              background-color: #0d1117;
+              color: #e6edf3;
+          }
+
+          /* Syntax Highlighting (GitHub dark) */
+          .hljs-doctag, .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #ff7b72; }
+          .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #d2a8ff; }
+          .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator, .hljs-variable, .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id { color: #79c0ff; }
+          .hljs-regexp, .hljs-string, .hljs-meta .hljs-string { color: #a5d6ff; }
+          .hljs-built_in, .hljs-symbol { color: #ffa657; }
+          .hljs-comment, .hljs-code, .hljs-formula { color: #8b949e; }
+          .hljs-name, .hljs-quote, .hljs-selector-tag, .hljs-selector-pseudo { color: #7ee787; }
+          .hljs-subst { color: #e6edf3; }
+          .hljs-section { color: #1f6feb; }
+          .hljs-bullet { color: #f2cc60; }
+          .hljs-addition { color: #aff5b4; background-color: #033a16; }
+          .hljs-deletion { color: #ffdcd7; background-color: #67060c; }
+
+          .markdown-alert-note { color: #4493f8; border-left-color: #4493f8; background-color: rgba(56, 139, 253, 0.1); }
+          .markdown-alert-tip { color: #3fb950; border-left-color: #3fb950; background-color: rgba(46, 160, 67, 0.1); }
+          .markdown-alert-important { color: #ab7df8; border-left-color: #ab7df8; background-color: rgba(137, 87, 229, 0.1); }
+          .markdown-alert-warning { color: #d29922; border-left-color: #d29922; background-color: rgba(187, 128, 9, 0.1); }
+          .markdown-alert-caution { color: #f85149; border-left-color: #f85149; background-color: rgba(248, 81, 73, 0.1); }
+          .markdown-alert > *:not(.markdown-alert-title) { color: #e6edf3; }
+
+          .frontmatter-table th,
+          .frontmatter-table td {
+              border-color: #30363d;
+          }
+          .frontmatter-table th {
+              background-color: #161b22;
+          }
+
+          .footnotes {
+              border-top-color: #30363d;
+          }
+
+          .abc-container {
+              background-color: #161b22;
+              border-color: #30363d;
+          }
+          .abc-notation svg {
+              color: #e6edf3 !important;
+          }
+      }
+  </style>
+</head>
+<body>
+  <article class="markdown-body">
+      <div align="center">
+
+<h1 id="-vanguard-bot">🛡️ Vanguard Bot</h1><h3 id="command-reference">Command Reference</h3><p><em>Moderation · Events · Attendance · Voice AI · Applications — all in one bot.</em></p>
+<p><img alt="Commands" src="https://img.shields.io/badge/Commands-20%2B-5865F2?style=flat-square"><br><img alt="Platform" src="https://img.shields.io/badge/Platform-Discord-5865F2?style=flat-square&amp;logo=discord&amp;logoColor=white"><br><img alt="Runtime" src="https://img.shields.io/badge/Runtime-Node.js-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white"><br><img alt="Vanguard" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fhealthchecks.io%2Fbadge%2Ffdc9610b-6cce-4fd7-b765-8d6922%2Fweu9-9gz-2.shields&amp;label=Vanguard"></p>
+</div>
+
+<blockquote class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span><span>Note</span></p>
+<p>All commands are <strong>slash commands</strong> unless noted. The permission level required to run each one is shown beside it.<br>Responses marked <strong>ephemeral</strong> are only visible to the user who ran the command.</p>
+</blockquote>
+<hr>
+<p><a id="permission-levels"></a></p>
+<h2 id="-permission-levels">🔑 Permission Levels</h2><p>Each command below is tagged with a colored pill so you can scan for what you can run at a glance.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Pill</th>
+<th>Level</th>
+<th>Who can use it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">🟢</td>
+<td><strong>Everyone</strong></td>
+<td>No restriction</td>
+</tr>
+<tr>
+<td align="center">🔵</td>
+<td><strong>Staff</strong></td>
+<td>Configured ticket staff role <strong>or</strong> Admin</td>
+</tr>
+<tr>
+<td align="center">🟡</td>
+<td><strong>Mod perms</strong></td>
+<td>The matching Discord permission (Manage Nicknames / Manage Messages / Ban Members / Kick Members / Moderate Members) <strong>or</strong> Dev</td>
+</tr>
+<tr>
+<td align="center">🔴</td>
+<td><strong>Admin</strong></td>
+<td>Server <em>Administrator</em> permission <strong>or</strong> Dev</td>
+</tr>
+<tr>
+<td align="center">🟣</td>
+<td><strong>Dev</strong></td>
+<td>User IDs listed in the <code>DEV_IDS</code> / <code>DEV_ID</code> env var</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="-table-of-contents">📑 Table of Contents</h2><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What's inside</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="#community">🎮 Community</a></td>
+<td>ping, user info, urban, birthdays, events, legal, transcription, applications</td>
+</tr>
+<tr>
+<td><a href="#moderation">🚨 Moderation</a></td>
+<td>ban, kick, mute, warn, lock, purge, word filter, nicknames</td>
+</tr>
+<tr>
+<td><a href="#server-tools">🔧 Server Tools</a></td>
+<td>server info, status rotation, tickets, member export</td>
+</tr>
+<tr>
+<td><a href="#voice-ai">🎙️ Voice AI</a></td>
+<td>join/leave, voice commands, AI chat management, pinned AI sources</td>
+</tr>
+<tr>
+<td><a href="#weekly-role">📅 Weekly Role &amp; Attendance</a></td>
+<td>scheduling, attendance, validation, inactivity alerts, exports</td>
+</tr>
+<tr>
+<td><a href="#applications">📝 Application System</a></td>
+<td>create, configure, and review application forms</td>
+</tr>
+<tr>
+<td><a href="#developer">⚙️ Developer-Only</a></td>
+<td>shutdown, bot config, logs, status</td>
+</tr>
+<tr>
+<td><a href="#passive">🤖 Passive Behavior</a></td>
+<td>things the bot does without a command</td>
+</tr>
+</tbody></table>
+<hr>
+<p><a id="community"></a></p>
+<h2 id="-community-commands">🎮 Community Commands</h2><h3 id="ping"><code>/ping</code></h3><p>🟢 <strong>Everyone</strong><br>Replies with "Pong!" — a basic latency check.</p>
+<h3 id="user"><code>/user</code></h3><p>🟢 <strong>Everyone</strong><br>Displays the username and server join date of whoever ran the command.</p>
+<h3 id="userinfo-user"><code>/userinfo [user]</code></h3><p>🟢 <strong>Everyone</strong><br>Shows a detailed embed for a member: avatar, roles, Discord join date, server join date, warning count, total attendance sessions checked in, and <strong>rank tenure</strong> (how long they've held each rank role — used for promotion eligibility: 3-month probation, 6 months as Operator, 6 months as Sr. Operator). Defaults to yourself if no user is provided. Tenure only records from when the bot began tracking role changes; earlier ranks won't show until backfilled with <code>/settenure</code>.</p>
+<h3 id="urban-define-word-urban-random"><code>/urban define &lt;word&gt;</code> · <code>/urban random</code></h3><p>🟢 <strong>Everyone</strong><br>Pulls definitions from Urban Dictionary — <code>define</code> fetches a random definition (with an example) for the given word, while <code>random</code> returns two random definitions.</p>
+<hr>
+<h3 id="-birthdays">🎂 Birthdays</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/birthday set &lt;month&gt; &lt;day&gt;</code></td>
+<td align="center">🟢</td>
+<td>Saves your birthday (month + day only, no year). Validates the day against the chosen month.</td>
+</tr>
+<tr>
+<td><code>/birthday view [user]</code></td>
+<td align="center">🟢</td>
+<td>Shows your birthday or another member's. Defaults to yourself.</td>
+</tr>
+<tr>
+<td><code>/birthday list</code></td>
+<td align="center">🟢</td>
+<td>Lists all server birthdays, upcoming first (wraps around from today). Marks today's birthdays with 🎂 and shows the announcement channel.</td>
+</tr>
+<tr>
+<td><code>/birthday remove</code></td>
+<td align="center">🟢</td>
+<td>Removes your own birthday entry.</td>
+</tr>
+<tr>
+<td><code>/birthday set_channel &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the channel for automatic birthday announcements.</td>
+</tr>
+<tr>
+<td><code>/birthday clear_channel</code></td>
+<td align="center">🔴</td>
+<td>Disables automatic birthday announcements.</td>
+</tr>
+<tr>
+<td><code>/birthday remove_user &lt;user&gt;</code></td>
+<td align="center">🔴</td>
+<td>Removes another member's birthday entry.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="-events">📆 Events</h3><h4 id="event-create-title-date-time-options"><code>/event create &lt;title&gt; &lt;date&gt; &lt;time&gt; [options]</code></h4><p>🟢 <strong>Everyone</strong><br>Creates an event, posts it as an embed with RSVP buttons (✅ Going / 🤔 Maybe / ❌ Can't Make It), and creates a native Discord scheduled event in the Events tab.</p>
+<p><strong>Options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>location</code></td>
+<td>Venue or location string</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>Event body text</td>
+</tr>
+<tr>
+<td><code>post_channel</code></td>
+<td>Text or forum channel to post in (defaults to current)</td>
+</tr>
+<tr>
+<td><code>notify_role</code></td>
+<td>Role to ping when posted</td>
+</tr>
+<tr>
+<td><code>repeat</code></td>
+<td>None / Daily / Weekly auto-repost</td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td>Hours (default 2, range 0.5–48)</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>Embed hex color (e.g. <code>FF5733</code>)</td>
+</tr>
+<tr>
+<td><code>image_url</code></td>
+<td>Banner image URL</td>
+</tr>
+</tbody></table>
+<blockquote class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 384 512"><path d="M297.2 248.9C311.6 228.3 320 203.2 320 176c0-70.7-57.3-128-128-128S64 105.3 64 176c0 27.2 8.4 52.3 22.8 72.9c3.7 5.3 8.1 11.3 12.8 17.7c0 0 0 0 0 0c12.9 17.7 28.3 38.9 39.8 59.8c10.4 19 15.7 38.8 18.3 57.5L109 384c-2.2-12-5.9-23.7-11.8-34.5c-9.9-18-22.2-34.9-34.5-51.8c0 0 0 0 0 0s0 0 0 0c-5.2-7.1-10.4-14.2-15.4-21.4C27.6 247.9 16 213.3 16 176C16 78.8 94.8 0 192 0s176 78.8 176 176c0 37.3-11.6 71.9-31.4 100.3c-5 7.2-10.2 14.3-15.4 21.4c0 0 0 0 0 0s0 0 0 0c-12.3 16.8-24.6 33.7-34.5 51.8c-5.9 10.8-9.6 22.5-11.8 34.5l-48.6 0c2.6-18.7 7.9-38.6 18.3-57.5c11.5-20.9 26.9-42.1 39.8-59.8c0 0 0 0 0 0s0 0 0 0s0 0 0 0c4.7-6.4 9-12.4 12.7-17.7zM192 128c-26.5 0-48 21.5-48 48c0 8.8-7.2 16-16 16s-16-7.2-16-16c0-44.2 35.8-80 80-80c8.8 0 16 7.2 16 16s-7.2 16-16 16zm0 384c-44.2 0-80-35.8-80-80l0-16 160 0 0 16c0 44.2-35.8 80-80 80z"></path></svg></span><span>Tip</span></p>
+
+<ul>
+<li>Posting to a <strong>forum channel</strong> creates a new thread.</li>
+<li>Date/time is parsed in <strong>your personal timezone</strong> if you've configured one via <code>/event settings</code>.</li>
+<li>The native scheduled event uses the post URL as its location when no location is given.</li>
+</ul>
+</blockquote>
+<h4 id="event-list"><code>/event list</code></h4><p>🟢 <strong>Everyone</strong><br>Lists upcoming events (up to 10), soonest first, with RSVP counts.</p>
+<h4 id="event-schedule"><code>/event schedule</code></h4><p>🟢 <strong>Everyone</strong><br>Shows your personal RSVP schedule — events you've marked Going or Maybe.</p>
+<h4 id="event-settings"><code>/event settings</code></h4><p>🟢 <strong>Everyone</strong><br>Opens a button panel to toggle your event preferences: DM RSVP confirmations, ephemeral RSVP confirmations, overlap warnings (alerts you when two RSVP'd events clash), your personal timezone, and whether event times are parsed using that timezone.</p>
+<hr>
+<h3 id="-legal">⚖️ Legal</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/legal privacy</code></td>
+<td align="center">🟢</td>
+<td>DMs you the Privacy Policy link. Falls back to an ephemeral reply with the raw link if your DMs are closed.</td>
+</tr>
+<tr>
+<td><code>/legal tos</code></td>
+<td align="center">🟢</td>
+<td>DMs you the Terms of Service link, with the same DM fallback.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="feedback">💬 Feedback</h3><h4 id="feedback-message-anonymous"><code>/feedback &lt;message&gt; [anonymous]</code></h4><p>🟢 <strong>Everyone</strong><br>Sends feedback, a suggestion, or a bug report to the team — posted to the channel set via <code>/botconfig set_feedback_channel</code>, with an <strong>ephemeral</strong> confirmation to the submitter. <code>anonymous: True</code> hides their name and avatar. Rate-limited to one submission every 2 minutes.</p>
+<h3 id="-transcription">🎙️ Transcription</h3><h4 id="transcribe-start-output"><code>/transcribe start &lt;output&gt;</code></h4><p>🟢 <strong>Everyone</strong> · <em>must be in a voice channel</em><br>Joins your voice channel and posts live transcription to the chosen text channel. Each utterance appears as <code>🎙️ **Name**: text</code>, and the command spins up a named session (e.g. <code>silent-wolf</code>). Use <code>/leave</code> to end it.</p>
+<blockquote class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span><span>Note</span></p>
+<p><strong>Transcription engine priority</strong></p>
+<ol>
+<li><strong>Deepgram</strong> (cloud, fastest) — used when <code>DEEPGRAM_API_KEY</code> is set and Deepgram is healthy.</li>
+<li><strong>Vosk + Whisper</strong> (local fallback) — Vosk shows a live preview, Whisper finalizes. Kicks in automatically if Deepgram times out or errors.</li>
+</ol>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/transcribe sessions [page]</code></td>
+<td align="center">🟢</td>
+<td>Lists past sessions (10/page): ID, voice channel, who started it, duration, and line count.</td>
+</tr>
+<tr>
+<td><code>/transcribe view &lt;session_id&gt;</code></td>
+<td align="center">🟢</td>
+<td>Shows the full transcript. Sends a <code>.txt</code> attachment if over 1900 characters.</td>
+</tr>
+<tr>
+<td><code>/transcribe mode &lt;engine&gt;</code></td>
+<td align="center">🟢</td>
+<td>Switches engine: <code>deepgram</code> re-enables cloud mode, <code>local</code> forces Vosk + Whisper. Persists across restarts.</td>
+</tr>
+<tr>
+<td><code>/transcribe services &lt;action&gt;</code></td>
+<td align="center">🟣</td>
+<td>Controls the background Vosk + Whisper processes (pre-loaded at bot startup): <code>start</code> spawns them if stopped, <code>stop</code> kills them to free RAM/VRAM (they respawn on the next <code>/transcribe start</code>), <code>status</code> shows whether Whisper is running and Vosk is ready or still loading.</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="-applications-quick-access">📨 Applications (quick access)</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/apply &lt;application&gt;</code></td>
+<td align="center">🟢</td>
+<td>Opens a modal form (up to 5 short/paragraph questions) and submits it to the configured review channel.</td>
+</tr>
+<tr>
+<td><code>/application-status &lt;application&gt;</code></td>
+<td align="center">🟢</td>
+<td>Shows when you last submitted a given application type, or confirms you haven't yet.</td>
+</tr>
+</tbody></table>
+<p><em>Full setup commands live in the <a href="#applications">Application System</a> section.</em></p>
+<hr>
+<p><a id="moderation"></a></p>
+<h2 id="-moderation-commands">🚨 Moderation Commands</h2><h3 id="member-actions">Member Actions</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/ban &lt;user&gt; [reason]</code></td>
+<td align="center">🟡 <em>Ban Members</em></td>
+<td>Bans a user, DMing the reason first. Blocked if the target has an equal/higher role or the bot can't ban them. Logged to audit log.</td>
+</tr>
+<tr>
+<td><code>/unban &lt;user&gt; [reason]</code></td>
+<td align="center">🟡 <em>Ban Members</em></td>
+<td>Removes a ban. Errors if the user isn't currently banned.</td>
+</tr>
+<tr>
+<td><code>/kick &lt;user&gt; [reason]</code></td>
+<td align="center">🟡 <em>Kick Members</em></td>
+<td>Kicks a user, DMing the reason first. Blocked if the bot can't kick them. Logged to audit log.</td>
+</tr>
+<tr>
+<td><code>/tempban &lt;user&gt; &lt;hours&gt; [reason]</code></td>
+<td align="center">🟡 <em>Ban Members</em></td>
+<td>Bans for 1–8760 hours, then auto-unbans when the timer expires. DMs the expiry time. Blocked for equal/higher roles.</td>
+</tr>
+<tr>
+<td><code>/tempmute &lt;user&gt; &lt;minutes&gt; [reason]</code></td>
+<td align="center">🟡 <em>Moderate Members</em></td>
+<td>Discord timeout for 1–40320 minutes (up to 28 days). DMs the expiry time. Blocked for equal/higher roles.</td>
+</tr>
+</tbody></table>
+<h3 id="warnings">Warnings</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/warn &lt;user&gt; [reason]</code></td>
+<td align="center">🔴</td>
+<td>Issues a warning and DMs the user. Publicly shows their total warning count. If a threshold is set via <code>/botconfig set_warn_threshold</code>, auto-kicks or bans on reaching it.</td>
+</tr>
+<tr>
+<td><code>/warnings view &lt;user&gt;</code></td>
+<td align="center">🔴</td>
+<td>Lists all warnings with timestamps and who issued each.</td>
+</tr>
+<tr>
+<td><code>/warnings clear &lt;user&gt;</code></td>
+<td align="center">🔴</td>
+<td>Clears all warnings for a user. Logged to audit log.</td>
+</tr>
+</tbody></table>
+<h3 id="channel-control">Channel Control</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/lock &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Stops everyone from sending messages in the channel. Admins are unaffected.</td>
+</tr>
+<tr>
+<td><code>/unlock &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Restores send permission for everyone.</td>
+</tr>
+<tr>
+<td><code>/purge &lt;amount&gt;</code></td>
+<td align="center">🟡 <em>Manage Messages</em></td>
+<td>Bulk-deletes 1–100 messages. Can't touch messages older than 14 days (Discord limit). Logged.</td>
+</tr>
+<tr>
+<td><code>/purge-links [channel]</code></td>
+<td align="center">🟡 <em>Manage Messages</em></td>
+<td>Scans the last 100 messages and deletes any containing <code>http://</code>, <code>https://</code>, or <code>discord.gg/</code> links. Logged.</td>
+</tr>
+</tbody></table>
+<h3 id="word-filter">Word Filter</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/wordfilter add &lt;word&gt;</code></td>
+<td align="center">🔴</td>
+<td>Adds a word/phrase to the auto-delete filter.</td>
+</tr>
+<tr>
+<td><code>/wordfilter remove &lt;word&gt;</code></td>
+<td align="center">🔴</td>
+<td>Removes a word/phrase from the filter.</td>
+</tr>
+<tr>
+<td><code>/wordfilter list</code></td>
+<td align="center">🔴</td>
+<td>Shows all filtered words, enabled/disabled status, and the log channel.</td>
+</tr>
+<tr>
+<td><code>/wordfilter enable</code> · <code>/wordfilter disable</code></td>
+<td align="center">🔴</td>
+<td>Toggles the filter without clearing the word list.</td>
+</tr>
+<tr>
+<td><code>/wordfilter set_log_channel &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Logs violations to a channel (who sent it, what was deleted).</td>
+</tr>
+<tr>
+<td><code>/wordfilter clear_log_channel</code></td>
+<td align="center">🔴</td>
+<td>Stops logging violations.</td>
+</tr>
+</tbody></table>
+<h3 id="roles">Roles</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/rolecreate &lt;name&gt; [color] [hoist] [mentionable]</code></td>
+<td align="center">🟡 <em>Manage Roles</em></td>
+<td>Creates a role. <code>color</code> = hex (<code>FF5733</code>) or <code>random</code>; <code>hoist</code> shows holders separately; <code>mentionable</code> lets anyone @mention it. Created at the bottom of the list — reposition in Server Settings. Audit-logged.</td>
+</tr>
+<tr>
+<td><code>/rolecolor &lt;role&gt; &lt;color&gt;</code></td>
+<td align="center">🟡 <em>Manage Roles</em></td>
+<td>Changes a role's color (hex or <code>random</code>). Blocked for @everyone, integration-managed roles, roles at/above your own highest (dev bypass), or roles above the bot. Shows before → after hex; audit-logged.</td>
+</tr>
+<tr>
+<td><code>/rolerename &lt;role&gt; &lt;name&gt;</code></td>
+<td align="center">🟡 <em>Manage Roles</em></td>
+<td>Renames a role. Same hierarchy guards as <code>/rolecolor</code>. Shows old → new name; audit-logged.</td>
+</tr>
+<tr>
+<td><code>/roledelete &lt;role&gt;</code></td>
+<td align="center">🟡 <em>Manage Roles</em></td>
+<td>Deletes a role (reports how many members held it). Same hierarchy guards apply; audit-logged.</td>
+</tr>
+</tbody></table>
+<h3 id="nicknames">Nicknames</h3><h4 id="nickname-member-nickname"><code>/nickname &lt;member&gt; [nickname]</code></h4><p>🟡 <strong>Manage Nicknames</strong><br>Changes a member's nickname. Leave <code>nickname</code> blank to reset it to their username. Logged to audit log with old → new name.</p>
+<blockquote class="markdown-alert markdown-alert-important"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path></svg></span><span>Important</span></p>
+<p><strong>Permission rules</strong></p>
+<ul>
+<li><strong>Dev</strong> can rename anyone, including the server owner.</li>
+<li><strong>Admin / Manage Nicknames</strong> can only rename members <em>below</em> them in the role hierarchy.</li>
+<li>No one can rename someone with an equal or higher role, or the server owner (unless Dev).</li>
+<li>The bot's own role must sit above the target.</li>
+</ul>
+</blockquote>
+<hr>
+<p><a id="server-tools"></a></p>
+<h2 id="-server-tools">🔧 Server Tools</h2><h3 id="serverinfo"><code>/serverinfo</code></h3><p>🟢 <strong>Everyone</strong><br>Shows server name, member count, emoji count, server ID, owner ID, creation date, and verification level.</p>
+<h3 id="status-rotation">Status Rotation</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/status add &lt;text&gt;</code></td>
+<td align="center">🔴</td>
+<td>Adds a message to the bot's rotating presence.</td>
+</tr>
+<tr>
+<td><code>/status list</code></td>
+<td align="center">🔴</td>
+<td>Shows all currently rotating status messages.</td>
+</tr>
+<tr>
+<td><code>/status suggest &lt;text&gt;</code></td>
+<td align="center">🟢*</td>
+<td>Submits a status suggestion for community vote (posts a vote embed). *Restricted to the configured suggest role if one is set.</td>
+</tr>
+<tr>
+<td><code>/status setvotechannel &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the channel where vote embeds are posted.</td>
+</tr>
+<tr>
+<td><code>/status setvoterole &lt;role&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the role allowed to use <code>/status suggest</code>. If unset, anyone can suggest.</td>
+</tr>
+</tbody></table>
+<h3 id="-tickets">🎫 Tickets</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/ticket open [reason]</code></td>
+<td align="center">🟢</td>
+<td>Opens a private ticket channel visible only to you and staff. One open ticket per user. Logged.</td>
+</tr>
+<tr>
+<td><code>/ticket close [reason]</code></td>
+<td align="center">🔵 <em>Staff / owner / Admin</em></td>
+<td>Closes the ticket, DMs the opener, logs it, then deletes the channel after 5 seconds.</td>
+</tr>
+<tr>
+<td><code>/ticket add &lt;user&gt;</code></td>
+<td align="center">🔵 <em>Staff / Admin</em></td>
+<td>Adds a member to the ticket with view/send/read access.</td>
+</tr>
+<tr>
+<td><code>/ticket panel</code></td>
+<td align="center">🔴</td>
+<td>Posts a persistent "Open a Ticket" button so users can open tickets without a slash command.</td>
+</tr>
+<tr>
+<td><code>/ticketconfig set_category &lt;category&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the category new tickets are created under.</td>
+</tr>
+<tr>
+<td><code>/ticketconfig set_staff_role &lt;role&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the role that sees and can close all tickets.</td>
+</tr>
+<tr>
+<td><code>/ticketconfig set_log_channel &lt;channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets where ticket open/close events are logged.</td>
+</tr>
+<tr>
+<td><code>/ticketconfig view</code></td>
+<td align="center">🔴</td>
+<td>Shows current ticket config (category, staff role, log channel).</td>
+</tr>
+</tbody></table>
+<h3 id="member-export-utilities">Member Export &amp; Utilities</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/getmembers &lt;sheet&gt;</code></td>
+<td align="center">🟢</td>
+<td>Exports all non-bot members (nickname + username) to a Google Sheet tab. Offers to create the tab if missing, and skips members already listed.</td>
+</tr>
+<tr>
+<td><code>/embedguide</code></td>
+<td align="center">🟢</td>
+<td>Posts a demo embed showing every formatting option (color, title, URL, author, thumbnail, image, fields, description). Reference utility.</td>
+</tr>
+<tr>
+<td><code>/rolemenu create · addrole · removerole · post · list · delete</code></td>
+<td align="center">🔴 <em>build</em> / 🟢 <em>click</em></td>
+<td>Builds an embed of buttons members click to <strong>self-assign roles</strong>. Admin drafts a menu (<code>create</code>), adds role buttons with optional label/emoji (<code>addrole</code>, up to 25), then <code>post</code>s it to a channel. Clicking a button toggles the role on/off with an ephemeral confirmation. Roles granting Administrator, integration-managed roles, or roles above the bot are refused. Posted menus keep working after the draft is deleted.</td>
+</tr>
+<tr>
+<td><code>/tenureview [export]</code></td>
+<td align="center">🔴</td>
+<td>Full tenure roster — every member holding a tracked rank, grouped by rank and sorted longest-held first, showing months held + since-date or <em>no data</em> where no start date is recorded (summary counts the gaps). <code>export: True</code> downloads the complete list as CSV.</td>
+</tr>
+<tr>
+<td><code>/eligible [export]</code></td>
+<td align="center">🔴</td>
+<td>Roster of members currently <strong>tenure-eligible for promotion</strong>, grouped by milestone (Recruit 3&nbsp;mo → Operator nomination; Operator 6&nbsp;mo → Sr. Operator nomination; Sr. Operator 6&nbsp;mo → elected roles), sorted longest-held first with since-dates and months held. Each group splits into ✅&nbsp;good&nbsp;standing and ⚠️&nbsp;review-first, flagging members on a current 2+&nbsp;missed-check-in streak or with active warnings (data point only — never removed from the list). <code>export: True</code> downloads it as CSV. Tenure only — other requirements still apply.</td>
+</tr>
+<tr>
+<td><code>/attendancestats &lt;user&gt;</code></td>
+<td align="center">🔴</td>
+<td>Shows every attendance session a member has checked into, newest first. Flags manual entries with who added them.</td>
+</tr>
+<tr>
+<td><code>/attendanceexport [job_id] [week]</code></td>
+<td align="center">🔴</td>
+<td>Exports the full attendance log as CSV, optionally filtered by job ID and/or cycle week.</td>
+</tr>
+</tbody></table>
+<hr>
+<p><a id="voice-ai"></a></p>
+<h2 id="-voice-ai">🎙️ Voice AI</h2><h3 id="join"><code>/join</code></h3><p>🟢 <strong>Everyone</strong> · <em>must be in a voice channel</em><br>Deploys Vanguard into your voice channel with AI voice interaction. It listens for the <strong>"Vanguard"</strong> wake word, transcribes via GPU Whisper, routes to TabbyAPI for a response, and speaks back through Kokoro ONNX TTS.</p>
+<p><strong>Spoken voice commands</strong> — require the wake word <strong>plus</strong> a configured code phrase:</p>
+<table>
+<thead>
+<tr>
+<th>Phrase</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lock</code> / <code>unlock</code></td>
+<td>Locks / unlocks the voice channel</td>
+</tr>
+<tr>
+<td><code>mute [name]</code> / <code>unmute [name]</code></td>
+<td>Server mutes / unmutes a member</td>
+</tr>
+<tr>
+<td><code>leave</code></td>
+<td>Disconnects Vanguard</td>
+</tr>
+<tr>
+<td><code>knowledge [key] to/is [value]</code></td>
+<td>Updates the AI knowledge base</td>
+</tr>
+</tbody></table>
+<h3 id="leave"><code>/leave</code></h3><p>🟢 <strong>Everyone</strong><br>Disconnects Vanguard and stops the transcription session.</p>
+<h3 id="voice-configuration">Voice Configuration</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/vanguardvc setphrase &lt;phrase&gt;</code></td>
+<td align="center">🔴</td>
+<td>Sets the code phrase required between "Vanguard" and the command word, preventing accidental triggers (e.g. <code>Vanguard, alpha, lock</code>).</td>
+</tr>
+<tr>
+<td><code>/vanguardvc clearphrase</code></td>
+<td align="center">🔴</td>
+<td>Removes the code phrase and disables voice commands.</td>
+</tr>
+<tr>
+<td><code>/vanguardvc enable &lt;command&gt;</code> · <code>disable &lt;command&gt;</code></td>
+<td align="center">🔴</td>
+<td>Enables/disables individual voice commands.</td>
+</tr>
+<tr>
+<td><code>/vanguardvc status</code></td>
+<td align="center">🔴</td>
+<td>Shows the code phrase and which voice commands are on/off.</td>
+</tr>
+</tbody></table>
+<h3 id="-ai-chat-management">🧠 AI Chat Management — <code>/vanguard</code></h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/vanguard enable &lt;channel&gt;</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Enables passive AI chat in a channel — the bot responds to messages containing "vanguard" there.</td>
+</tr>
+<tr>
+<td><code>/vanguard disable &lt;channel&gt;</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Disables AI chat in a channel.</td>
+</tr>
+<tr>
+<td><code>/vanguard status</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Deployment briefing: dev-mode state, knowledge entry/document counts, and all AI-enabled channels.</td>
+</tr>
+<tr>
+<td><code>/vanguard update &lt;key&gt; &lt;value&gt;</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Adds or updates a short key/value knowledge entry the AI references in every response.</td>
+</tr>
+<tr>
+<td><code>/vanguard docadd &lt;title&gt; [content] [file]</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Adds or updates a longer knowledge document — paste text (up to 4000 chars) or attach a <code>.txt</code> file (max 50&nbsp;KB).</td>
+</tr>
+<tr>
+<td><code>/vanguard doclist</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Lists all saved knowledge documents with their sizes.</td>
+</tr>
+<tr>
+<td><code>/vanguard docremove &lt;title&gt;</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Removes a knowledge document by title.</td>
+</tr>
+<tr>
+<td><code>/vanguard clear</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Clears the AI's conversation memory for the current channel.</td>
+</tr>
+<tr>
+<td><code>/vanguard devmode &lt;enabled&gt;</code></td>
+<td align="center">🟣</td>
+<td>Toggles Dev Mode — while active, only devs can talk to the AI in enabled channels.</td>
+</tr>
+</tbody></table>
+<blockquote class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span><span>Note</span></p>
+<p>The AI can also learn on its own — when a user directly answers a question it asked, it may emit a <code>LEARN: topic | info</code> line that persists the fact as a knowledge entry.</p>
+</blockquote>
+<h3 id="-pinned-ai-sources">📌 Pinned AI Sources</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/vanguard pinadd &lt;keyword&gt; &lt;url&gt; &lt;label&gt;</code></td>
+<td align="center">🔴</td>
+<td>Adds a pinned source — a URL the AI auto-fetches and folds into search results when a query matches the keyword.</td>
+</tr>
+<tr>
+<td><code>/vanguard pinremove &lt;keyword&gt;</code></td>
+<td align="center">🔴</td>
+<td>Removes a pinned source by keyword.</td>
+</tr>
+<tr>
+<td><code>/vanguard pinlist</code></td>
+<td align="center">🔴</td>
+<td>Lists all pinned sources with keywords, labels, and URLs.</td>
+</tr>
+<tr>
+<td><code>/vanguard imgadd &lt;keyword&gt; &lt;file&gt; [label]</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Adds a local library image (PNG/JPG/GIF/WebP, max 8&nbsp;MB) — attached automatically to AI replies whenever the keyword appears in a question. Re-adding a keyword replaces its image.</td>
+</tr>
+<tr>
+<td><code>/vanguard imgremove &lt;keyword&gt;</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Removes a library image by keyword (deletes the stored file).</td>
+</tr>
+<tr>
+<td><code>/vanguard imglist</code></td>
+<td align="center">🟡 <em>Manage Channels</em></td>
+<td>Lists all library images with keywords and labels.</td>
+</tr>
+</tbody></table>
+<blockquote class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span><span>Note</span></p>
+<p><strong>How AI search works</strong><br>When someone asks a question in an AI-enabled channel, the bot runs web search (Firecrawl primary, Brave fallback), weather (if a location is detected), Wikipedia, and all matching pinned sources <strong>in parallel</strong>. Weather is dynamic (e.g. <em>"weather in Dallas"</em> → live from wttr.in), and Wikipedia auto-detects airsoft context, trying <code>{topic} airsoft</code> first to avoid pulling unrelated articles.</p>
+</blockquote>
+<hr>
+<p><a id="weekly-role"></a></p>
+<h2 id="-weekly-role-attendance-assignweeklyrole">📅 Weekly Role &amp; Attendance — <code>/assignweeklyrole</code></h2><p>The weekly role system tracks attendance by watching who types <code>here</code> in a designated channel during a rolling <strong>7-day cycle</strong>.</p>
+<table>
+<tbody><tr><th>✅ Eligible roles</th><th>🚫 Excluded by default</th></tr>
+<tr><td valign="top">
+
+<p>Members need at least one (matched case-insensitively):</p>
+<ul>
+<li>Recruit / Recruits</li>
+<li>Operator / Operators</li>
+<li>Senior Operator / Senior Operators</li>
+<li>Board Member / Board Members / Board</li>
+</ul>
+</td><td valign="top">
+
+<p>Flags can include them when needed:</p>
+<ul>
+<li>CEO, CFO, COO — command staff</li>
+<li>Active Duty</li>
+</ul>
+</td></tr>
+</tbody></table>
+
+<blockquote class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336l24 0 0-64-24 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l48 0c13.3 0 24 10.7 24 24l0 88 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-80 0c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span><span>Note</span></p>
+<p><strong>Check-in window</strong></p>
+<ul>
+<li><strong>Start:</strong> midnight of the cycle start day — catches members who typed <code>here</code> before the scheduled trigger fired.</li>
+<li><strong>End:</strong> trigger time + 7 days (collector hard cutoff).</li>
+<li>Messages outside this window are ignored by validation.</li>
+</ul>
+</blockquote>
+<h3 id="scheduling">Scheduling</h3><h4 id="assignweeklyrole-schedule-role-day-time-here_channel-info_channel-sheet"><code>/assignweeklyrole schedule &lt;role&gt; &lt;day&gt; &lt;time&gt; &lt;here_channel&gt; &lt;info_channel&gt; &lt;sheet&gt;</code></h4><p>🔴 <strong>Admin</strong><br>Schedules a weekly role reset + check-in cycle and assigns a random codename (e.g. <code>overlord</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>role</code></td>
+<td>The weekly role to reset/assign</td>
+</tr>
+<tr>
+<td><code>day</code></td>
+<td>Day of week (e.g. Monday)</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td>24h format (HH:mm)</td>
+</tr>
+<tr>
+<td><code>here_channel</code></td>
+<td>Where members type <code>here</code></td>
+</tr>
+<tr>
+<td><code>info_channel</code></td>
+<td>Where the announcement embed is posted</td>
+</tr>
+<tr>
+<td><code>sheet</code></td>
+<td>Google Sheet tab to log attendance to</td>
+</tr>
+</tbody></table>
+<p><strong>When the job fires it:</strong></p>
+<ol>
+<li>Strips the role from all eligible members (skips admins)</li>
+<li>Posts the announcement embed</li>
+<li>Backfills any <code>here</code> messages sent since midnight (catches pre-trigger check-ins)</li>
+<li>Takes an initial snapshot of missing members</li>
+<li>Starts the 7-day collector</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/assignweeklyrole trigger &lt;job_id&gt; [force] [no_announcement] [skip_attended]</code></td>
+<td align="center">🔴</td>
+<td>Fires a job immediately. <code>force</code> runs even if it already ran today; <code>no_announcement</code> skips the embed; <code>skip_attended</code> keeps the role on members who already checked in today.</td>
+</tr>
+<tr>
+<td><code>/assignweeklyrole list</code></td>
+<td align="center">🔴</td>
+<td>Lists active jobs with codenames, roles, and schedules.</td>
+</tr>
+<tr>
+<td><code>/assignweeklyrole clear</code></td>
+<td align="center">🔴</td>
+<td>Cancels and removes all scheduled jobs.</td>
+</tr>
+</tbody></table>
+<h3 id="announcements">Announcements</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/assignweeklyrole set_announcement &lt;job_id&gt; [description]</code></td>
+<td align="center">🔴</td>
+<td>Sets custom text for the announcement embed. Leave blank to reset to default.</td>
+</tr>
+<tr>
+<td><code>/assignweeklyrole update_announcement &lt;new_description&gt; [job_id]</code></td>
+<td align="center">🔴</td>
+<td>Edits the last posted announcement embed in place, without re-running the job.</td>
+</tr>
+</tbody></table>
+<h3 id="managing-attendance">Managing Attendance</h3><h4 id="assignweeklyrole-addrole-job_id-member-timestamp"><code>/assignweeklyrole addrole &lt;job_id&gt; &lt;member&gt; [timestamp]</code></h4><p>🔴 <strong>Admin</strong><br>Manually grants the weekly role and logs the member for the current cycle. Use <code>timestamp</code> to backdate the check-in (<code>2026-05-18 14:30</code> or ISO).</p>
+<ul>
+<li>Skips if already logged this cycle (no duplicates)</li>
+<li>Flagged as <strong>manual</strong> in the log and audit trail</li>
+<li>Shows as a "manual entry" in <code>validate</code> since the member never typed <code>here</code></li>
+</ul>
+<h4 id="assignweeklyrole-attendance-job_id-by_day-all-export"><code>/assignweeklyrole attendance [job_id] [by_day] [all] [export]</code></h4><p>🔴 <strong>Admin</strong><br>Views attendance records. Default shows the current cycle for the auto-detected (or specified) job.</p>
+<ul>
+<li><code>by_day: True</code> — breaks check-ins down by calendar day</li>
+<li><code>all: True</code> — shows all historical cycles (up to 10 embeds)</li>
+<li><code>export: True</code> — downloads a CSV instead. Combined with <code>all: True</code>, sends only the file plus a summary line (avoids Discord's 6000-char embed limit)</li>
+</ul>
+<blockquote>
+<p><strong>CSV columns:</strong> Cycle Week · Job ID · Display Name · Username · User ID · Check-in Time (UTC) · Synced · Manual</p>
+</blockquote>
+<h4 id="assignweeklyrole-sync-job_id"><code>/assignweeklyrole sync [job_id]</code></h4><p>🔴 <strong>Admin</strong><br>Pushes unsynced local attendance entries to Google Sheets. Leave <code>job_id</code> blank to sync all jobs. Reports pushed vs. failed counts.</p>
+<h4 id="assignweeklyrole-validate-job_id"><code>/assignweeklyrole validate [job_id]</code></h4><p>🔴 <strong>Admin</strong><br>Runs a validation pass on the active cycle (also runs automatically every 4 hours while a cycle is active). It checks for:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Duplicates</strong></td>
+<td>Removes duplicate log entries, keeping the earliest</td>
+</tr>
+<tr>
+<td><strong>Role restored</strong></td>
+<td>Re-adds the role to anyone in the log who lost it</td>
+</tr>
+<tr>
+<td><strong>Missing from log</strong></td>
+<td>Adds anyone who typed <code>here</code> but has no log entry</td>
+</tr>
+<tr>
+<td><strong>Manual entries</strong></td>
+<td>Flags members who never typed <code>here</code> — informational, not errors</td>
+</tr>
+<tr>
+<td><strong>Unsynced</strong></td>
+<td>Lists entries not yet pushed to Google Sheets</td>
+</tr>
+</tbody></table>
+<h4 id="assignweeklyrole-missing-job_id-include_command_staff-include_active_duty-export"><code>/assignweeklyrole missing [job_id] [include_command_staff] [include_active_duty] [export]</code></h4><p>🔴 <strong>Admin</strong><br>Shows eligible members who haven't checked in this cycle, sorted by most total cycles missed.</p>
+<p><strong>Default behavior</strong> excludes CEO/CFO/COO and Active Duty, and only counts members with an eligible role (Recruit, Operator, Senior Operator, Board Member).</p>
+<p><strong>Flags:</strong> <code>include_command_staff: True</code>, <code>include_active_duty: True</code>, and <code>export: True</code> (sends a CSV instead of the embed).</p>
+<blockquote class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 384 512"><path d="M297.2 248.9C311.6 228.3 320 203.2 320 176c0-70.7-57.3-128-128-128S64 105.3 64 176c0 27.2 8.4 52.3 22.8 72.9c3.7 5.3 8.1 11.3 12.8 17.7c0 0 0 0 0 0c12.9 17.7 28.3 38.9 39.8 59.8c10.4 19 15.7 38.8 18.3 57.5L109 384c-2.2-12-5.9-23.7-11.8-34.5c-9.9-18-22.2-34.9-34.5-51.8c0 0 0 0 0 0s0 0 0 0c-5.2-7.1-10.4-14.2-15.4-21.4C27.6 247.9 16 213.3 16 176C16 78.8 94.8 0 192 0s176 78.8 176 176c0 37.3-11.6 71.9-31.4 100.3c-5 7.2-10.2 14.3-15.4 21.4c0 0 0 0 0 0s0 0 0 0c-12.3 16.8-24.6 33.7-34.5 51.8c-5.9 10.8-9.6 22.5-11.8 34.5l-48.6 0c2.6-18.7 7.9-38.6 18.3-57.5c11.5-20.9 26.9-42.1 39.8-59.8c0 0 0 0 0 0s0 0 0 0s0 0 0 0c4.7-6.4 9-12.4 12.7-17.7zM192 128c-26.5 0-48 21.5-48 48c0 8.8-7.2 16-16 16s-16-7.2-16-16c0-44.2 35.8-80 80-80c8.8 0 16 7.2 16 16s-7.2 16-16 16zm0 384c-44.2 0-80-35.8-80-80l0-16 160 0 0 16c0 44.2-35.8 80-80 80z"></path></svg></span><span>Tip</span></p>
+
+<ul>
+<li>Missing count includes the current cycle (so a first miss = 1).</li>
+<li>Tracks both <strong>total</strong> and <strong>consecutive</strong> missed cycles — a check-in resets the consecutive streak but not the total.</li>
+<li>Members at <strong>26+ consecutive</strong> missed cycles (~6 months) are flagged 🚨 — the inactivity threshold from the promotion requirements that subjects a member to demotion/removal review.</li>
+<li>Repeat offenders (2+ cycles missed) are tallied separately in the summary.</li>
+<li>Running this saves a snapshot used to track late check-ins through the week.</li>
+</ul>
+<p><strong>CSV columns:</strong> Display Name · Username · User ID · Cycles Missed · Consecutive Missed · At 6-Month Threshold <em>(sorted by most missed, descending)</em></p>
+</blockquote>
+<h4 id="assignweeklyrole-set_alert_channel-job_id-channel"><code>/assignweeklyrole set_alert_channel [job_id] [channel]</code></h4><p>🔴 <strong>Admin</strong><br>Sets the channel for automatic inactivity alerts. When a cycle ends and a member reaches <strong>26 consecutive missed cycles</strong> (~6 months), the bot posts a red alert embed naming them — once per member; the flag resets if they check in again. Leave <code>channel</code> blank to disable alerts for the job.</p>
+<hr>
+<p><a id="applications"></a></p>
+<h2 id="-application-system">📝 Application System</h2><table>
+<thead>
+<tr>
+<th>Command</th>
+<th align="center">Perm</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/application-create &lt;id&gt; &lt;title&gt; &lt;review-channel&gt;</code></td>
+<td align="center">🔴</td>
+<td>Creates a new application type. <code>id</code> is the internal identifier (e.g. <code>moderator</code>), <code>title</code> is the display name, <code>review-channel</code> is where submissions land.</td>
+</tr>
+<tr>
+<td><code>/application-config &lt;application&gt; [options]</code></td>
+<td align="center">🔴</td>
+<td>Configures a type — see options below.</td>
+</tr>
+<tr>
+<td><code>/application-add-question &lt;application&gt; &lt;id&gt; &lt;label&gt; &lt;style&gt;</code></td>
+<td align="center">🔴</td>
+<td>Adds a question (<code>style</code> = Short or Paragraph). All questions are required; max 5 per application (Discord modal limit).</td>
+</tr>
+<tr>
+<td><code>/application-remove-question &lt;application&gt; &lt;question-id&gt;</code></td>
+<td align="center">🔴</td>
+<td>Removes a question by its ID.</td>
+</tr>
+<tr>
+<td><code>/application-list</code></td>
+<td align="center">🔴</td>
+<td>Lists all created application type IDs.</td>
+</tr>
+<tr>
+<td><code>/apply &lt;application&gt;</code></td>
+<td align="center">🟢</td>
+<td>Opens the modal; on submit, posts responses to the review channel with Accept/Deny buttons for staff.</td>
+</tr>
+<tr>
+<td><code>/application-status &lt;application&gt;</code></td>
+<td align="center">🟢</td>
+<td>Shows your last submission for a type, or confirms none on record.</td>
+</tr>
+</tbody></table>
+<p><strong><code>/application-config</code> options</strong></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>review-channel</code></td>
+<td>Where submissions are posted</td>
+</tr>
+<tr>
+<td><code>staff-role</code></td>
+<td>Role that can accept/deny</td>
+</tr>
+<tr>
+<td><code>applicant-role</code></td>
+<td>Role given when someone submits</td>
+</tr>
+<tr>
+<td><code>accept-role</code></td>
+<td>Role given on acceptance</td>
+</tr>
+<tr>
+<td><code>cooldown</code></td>
+<td>Seconds before a user can reapply</td>
+</tr>
+</tbody></table>
+<hr>
+<p><a id="developer"></a></p>
+<h2 id="-developer-only-commands">⚙️ Developer-Only Commands</h2><blockquote class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title"><span class="markdown-alert-icon" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480L40 480c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24l0 112c0 13.3 10.7 24 24 24s24-10.7 24-24l0-112c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path></svg></span><span>Warning</span></p>
+<p>These require your user ID to be in the <code>DEV_IDS</code> / <code>DEV_ID</code> env var.</p>
+</blockquote>
+<h3 id="runtime">Runtime</h3><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/stop [full]</code></td>
+<td>Gracefully shuts down the bot — sets status to invisible, then exits after 2 seconds. Under PM2 the default is effectively a <strong>remote restart</strong> (auto-revived in seconds); <code>full: True</code> makes it stay offline until restarted via <code>pm2 start vanguard</code> or start.bat.</td>
+</tr>
+<tr>
+<td><code>/botstatus</code></td>
+<td>Runtime stats: uptime, memory, Node.js version, last shutdown reason, guild count, application type count, total submissions, active temp-bans.</td>
+</tr>
+<tr>
+<td><code>/snowflake &lt;input&gt;</code></td>
+<td>Decodes a Discord snowflake ID into its creation timestamp — accepts a raw ID or any mention (<code>@role</code>, <code>@user</code>, <code>#channel</code>, custom emoji). Shows the detected type, creation time (native timestamp + Central Time), and raw snowflake internals. Ephemeral.</td>
+</tr>
+<tr>
+<td><code>/feedbacklist [count] [export]</code></td>
+<td>Views feedback submitted via <code>/feedback</code> (stored in <code>feedback.json</code>) — most recent entries with timestamp, submitter, and message; <code>export: True</code> downloads the full log as CSV. Ephemeral. Submitter identity is shown even for anonymous entries (for abuse handling).</td>
+</tr>
+<tr>
+<td><code>/settenure &lt;member&gt; &lt;role&gt; [date] [remove]</code></td>
+<td>Backfills or corrects a member's rank tenure start date (for ranks assigned before tracking began). Only tracked rank roles are accepted (Recruit, Operator, Senior Operator, Board, Director, CEO/CFO/COO); <code>date</code> can't be in the future; <code>remove: True</code> deletes the record. Audit-logged; shows in <code>/userinfo</code>.</td>
+</tr>
+<tr>
+<td><code>/tenuresweep</code></td>
+<td>Runs the audit-log tenure sweep on demand (same as the automatic startup sweep) — fills missing rank dates from the last ~45 days of audit history, never overwriting existing records. Reports the backfill count; errors point at a missing View Audit Log permission.</td>
+</tr>
+<tr>
+<td><code>/resettenure [member] [role] [all]</code></td>
+<td>Clears tenure records: <code>member</code> = all ranks for that member; <code>role</code> = that rank for everyone; both = one record; neither requires <code>all: True</code> as a safety latch before wiping everything. Audit-logged with scope and count.</td>
+</tr>
+<tr>
+<td><code>/settenurebulk &lt;date&gt; [role] [exclude]</code></td>
+<td>Bulk-fills tenure start dates for every member holding tracked ranks. <code>role</code> limits to one rank; <code>exclude</code> skips comma-separated rank names (e.g. <code>board, director, ceo</code>) for manual entry. <strong>Never overwrites</strong> existing dates — skipped members are counted separately. Per-rank breakdown in the reply; audit-logged.</td>
+</tr>
+</tbody></table>
+<details>
+<summary><strong>🔧 <code>/botconfig</code> — channels, welcomes &amp; thresholds</strong> (click to expand)</summary>
+
+<br>
+
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>set_error_channel &lt;channel&gt;</code></td>
+<td>Where unhandled errors/exceptions are reported.</td>
+</tr>
+<tr>
+<td><code>clear_error_channel</code></td>
+<td>Removes the error reporting channel.</td>
+</tr>
+<tr>
+<td><code>set_log_channel &lt;channel&gt;</code></td>
+<td>Channel for deleted/edited message logs.</td>
+</tr>
+<tr>
+<td><code>clear_log_channel</code></td>
+<td>Stops message logging.</td>
+</tr>
+<tr>
+<td><code>set_member_log_channel &lt;channel&gt;</code></td>
+<td>Channel for member join/leave logs.</td>
+</tr>
+<tr>
+<td><code>clear_member_log_channel</code></td>
+<td>Stops join/leave logging.</td>
+</tr>
+<tr>
+<td><code>set_weekly_ping_role &lt;role&gt;</code> / <code>clear_weekly_ping_role</code></td>
+<td>Sets (or clears) a role that gets @pinged on its own line just before each weekly roll-call announcement embed. Delivered as a real ping, scoped to only that role.</td>
+</tr>
+<tr>
+<td><code>set_tenure_channel &lt;channel&gt;</code> / <code>clear_tenure_channel</code></td>
+<td>Sets (or disables) the channel for tenure milestone announcements — promotion-eligibility posts when members cross the doc's timeframes (3&nbsp;mo Recruit, 6&nbsp;mo Operator, 6&nbsp;mo Sr. Operator). Checked at startup and every 12 hours; each milestone announces once.</td>
+</tr>
+<tr>
+<td><code>set_welcome_channel &lt;channel&gt;</code></td>
+<td>Where welcome messages post on join.</td>
+</tr>
+<tr>
+<td><code>clear_welcome_channel</code></td>
+<td>Disables welcome messages.</td>
+</tr>
+<tr>
+<td><code>set_welcome_message &lt;message&gt;</code></td>
+<td>Sets the welcome text. Use <code>{user}</code> for the member mention; previews with your own mention.</td>
+</tr>
+<tr>
+<td><code>clear_welcome_message</code></td>
+<td>Resets the welcome message to the built-in default.</td>
+</tr>
+<tr>
+<td><code>set_warn_threshold &lt;count&gt; &lt;action&gt;</code></td>
+<td>Auto-kicks or bans at a warning count. <code>action</code> = <code>kick</code> or <code>ban</code>.</td>
+</tr>
+<tr>
+<td><code>clear_warn_threshold</code></td>
+<td>Disables automatic threshold actions.</td>
+</tr>
+<tr>
+<td><code>view</code></td>
+<td>Shows all current bot configuration settings.</td>
+</tr>
+</tbody></table>
+</details>
+
+<h3 id="logs-runlog-type-last">Logs — <code>/runlog [type] [last]</code></h3><p><code>last</code> limits output to the most recent N entries.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sessions</code> <em>(default)</em></td>
+<td>Bot start/stop history</td>
+</tr>
+<tr>
+<td><code>commands</code></td>
+<td>All command executions</td>
+</tr>
+<tr>
+<td><code>audit</code></td>
+<td>Moderation actions (ban, kick, warn, etc.)</td>
+</tr>
+<tr>
+<td><code>errors</code></td>
+<td>Today's error log (raw text)</td>
+</tr>
+<tr>
+<td><code>errors-yesterday</code></td>
+<td>Yesterday's error log</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Error logs are sent as a file attachment if over 1900 characters. All logs auto-prune after 30 days.</p>
+</blockquote>
+<hr>
+<p><a id="passive"></a></p>
+<h2 id="-passive-behavior">🤖 Passive Behavior</h2><p><em>Things Vanguard does automatically — no command required.</em></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>🧠 AI Chat</strong></td>
+<td>In configured channels, the bot replies automatically. Text answers come from <strong>Claude Haiku</strong> (cloud) when an Anthropic API key is set, falling back to the local model on any failure; voice always uses the local model. Context includes web search (Firecrawl primary, Brave fallback) with scraped page text from the top 3 results, dynamic weather (if a location is detected), a Wikipedia lookup (airsoft context first when relevant), and any pinned sources matching the query. Replies can also include images: relevant image URLs found in the scraped results (restricted to URLs actually present in the search context), and local library images auto-attached when their keyword matches (<code>/vanguard imgadd</code>). Managed via <code>/vanguard</code>.</td>
+</tr>
+<tr>
+<td><strong>🚫 Word Filter</strong></td>
+<td>When enabled, every message is checked against the filter list and auto-deleted on a match. Violations log to the configured channel.</td>
+</tr>
+<tr>
+<td><strong>🎂 Birthday Announcements</strong></td>
+<td>On startup and on a daily check, posts a birthday message when a member's birthday is set and an announcement channel is configured.</td>
+</tr>
+<tr>
+<td><strong>⏲️ Temp-Ban Expiry</strong></td>
+<td>Temp-bans are tracked in <code>tempbans.json</code> and automatically reversed when their timer expires.</td>
+</tr>
+<tr>
+<td><strong>📝 Message Logging</strong></td>
+<td>With a log channel set, deleted and edited messages are logged with before/after content.</td>
+</tr>
+<tr>
+<td><strong>👋 Member Join/Leave Logging</strong></td>
+<td>With a member-log channel set, join and leave events post with the member's name and ID.</td>
+</tr>
+<tr>
+<td><strong>🎉 Welcome Messages</strong></td>
+<td>With a welcome channel + message set, a welcome is sent on join. <code>{user}</code> is replaced with the member's mention.</td>
+</tr>
+<tr>
+<td><strong>🎖️ Rank Tenure Tracking</strong></td>
+<td>Whenever a rank role changes on any member (Recruit, Operator, Senior Operator, Board, CEO/CFO/COO), the gain date is recorded automatically. Losing a rank clears its record, so a demotion restarts the tenure clock. On startup the bot also sweeps the audit log (last ~45 days, needs the View Audit Log permission) to fill gaps from promotions made while it was offline — never overwriting existing records. Shown in <code>/userinfo</code>; backfill ranks older than ~45 days with <code>/settenure</code>.</td>
+</tr>
+<tr>
+<td><strong>📋 Tenure Milestones</strong></td>
+<td>With a channel set via <code>/botconfig set_tenure_channel</code>, the bot checks tenure at startup and every 12 hours and announces members who crossed a promotion-eligibility timeframe: 3&nbsp;months as Recruit (probation complete), 6&nbsp;months as Operator (Sr. Operator nomination), 6&nbsp;months as Senior Operator (elected-role eligibility). The first-ever check records existing eligibility <em>silently</em> (no catch-up wall) — only new crossings announce, once per member+milestone. See the full current roster anytime with <code>/eligible</code>. Tenure eligibility only — other requirements still apply.</td>
+</tr>
+<tr>
+<td><strong>🚨 Inactivity Alerts</strong></td>
+<td>With an alert channel set via <code>/assignweeklyrole set_alert_channel</code>, the bot checks consecutive missed check-ins at the end of every weekly cycle and posts an alert when a member crosses 26 consecutive misses (~6 months) — the inactivity threshold for demotion/removal review. One alert per member; checking in resets the flag.</td>
+</tr>
+</tbody></table>
+<hr>
+<div align="center">
+
+<p><em>Vanguard Bot · Command Reference</em></p>
+</div>
+
+  </article>
+      <script>
+      function fitMarkdownExportToContent() {
+          var article = document.querySelector('.markdown-body');
+          if (!article) return;
+
+          article.style.width = '';
+          article.style.maxWidth = '980px';
+
+          var overflow = article.scrollWidth - article.clientWidth;
+          if (overflow <= 1) return;
+
+          var styles = window.getComputedStyle(article);
+          var paddingLeft = parseFloat(styles.paddingLeft) || 0;
+          var paddingRight = parseFloat(styles.paddingRight) || 0;
+          var borderRight = parseFloat(styles.borderRightWidth) || 0;
+          var borderLeft = parseFloat(styles.borderLeftWidth) || 0;
+          var boxSizing = styles.boxSizing;
+
+          var requiredWidth = boxSizing === 'border-box'
+              ? Math.ceil(article.scrollWidth + borderLeft + borderRight)
+              : Math.ceil(article.scrollWidth - paddingLeft - paddingRight);
+
+          article.style.width = requiredWidth + 'px';
+          article.style.maxWidth = 'none';
+      }
+
+      function queueMarkdownExportFit() {
+          window.requestAnimationFrame(function () {
+              window.requestAnimationFrame(fitMarkdownExportToContent);
+          });
+      }
+
+      window.addEventListener('load', function () {
+          var mathReady = Promise.resolve();
+          var article = document.querySelector('.markdown-body');
+          if (article && window.MutationObserver) {
+              new MutationObserver(queueMarkdownExportFit).observe(article, {
+                  childList: true,
+                  subtree: true
+              });
+          }
+          if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+              mathReady = window.MathJax.typesetPromise().catch(function (err) {
+                  console.warn('MathJax typeset failed:', err);
+              });
+          }
+          if (window.mermaid) {
+              try {
+                  window.mermaid.initialize({ startOnLoad: true, theme: 'default', gantt: { useWidth: 1200 } });
+              } catch (e) {
+                  console.warn('Mermaid initialization failed:', e);
+              }
+          }
+          if (window.ABCJS) {
+              try {
+                  var abcNodes = document.querySelectorAll('.abc-notation');
+                  abcNodes.forEach(function(node) {
+                      var code = decodeURIComponent(node.getAttribute('data-original-code') || '');
+                      if (code) {
+                          ABCJS.renderAbc(node.id, code, { responsive: 'resize' });
+                      }
+                      var container = node.closest('.abc-container');
+                      if (container) container.classList.remove('is-loading');
+                  });
+              } catch (e) {
+                  console.warn('ABCJS rendering failed:', e);
+              }
+          }
+          mathReady.finally(queueMarkdownExportFit);
+          queueMarkdownExportFit();
+      });
+      window.addEventListener('resize', queueMarkdownExportFit);
+  </script>
+</body>
+</html>
